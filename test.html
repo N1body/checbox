@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>框选checkbox</title>
+  <style>
+    .box {
+      width: 500px;
+      height: 500px;
+      border: 1px solid black;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    #myCanvas {
+      position: absolute;
+      border: 1px solid red;
+    }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <canvas id="myCanvas" width="500px" height="500px"></canvas>
+    <div class="container" style="position: absolute;">
+      <div class="cbox"></div>
+    </div>
+  </div>
+</body>
+<script>
+  // 获取最外层盒子
+  var box = document.querySelector('.box')
+  // 获取画布
+  var myCanvas = document.querySelector('#myCanvas')
+  var ctx = myCanvas.getContext('2d')
+  // 判断是否结束拖拽的标志
+  var dragFlag = true
+  
+  window.onload = function () {
+    // 创建 checkbox
+    createCheckBox()
+    // 鼠标拖拽监听
+    onPressDrag()
+  }
+
+  // 清除所有 checkbox 状态 
+  function clearCheckboxStatus () {
+    let checkboxs = document.querySelectorAll(".cbox>input[type]")
+    for (let i = 0; i < checkboxs.length; i++) {
+      checkboxs[i].checked = false
+    }
+  }
+
+  // 判断框选按钮四个点是否有某个点在区域内
+  function jugePoint (points, left, right, top, bottom) {
+    for (let i = 0; i < points.length; i++) {
+      let position = points[i];
+      if ( position.x >= left && position.x <= right && position.y >= top && position.y <= bottom) {
+        return true
+      } 
+    }
+    return false
+  }
+
+  // 监听所有 checkbox，检查它们是否在框选区域内
+  function checkChose (startX, startY, moveX, moveY) {
+    // 获取边界
+    let left = startX > moveX ? moveX : startX
+    let right = startX > moveX ? startX : moveX
+    let top = startY > moveY ? moveY : startY
+    let bottom = startY > moveY ? startY : moveY
+
+    let cboxs = document.querySelectorAll(".cbox")
+    let container = document.querySelector(".container")
+    
+    // 判断选中区域
+    // 由于 鼠标定位的位置与实际 checkbox 坐标有误差(没找到误差原因) 所以下方值部分是靠固定值计算
+    let initvalue = 8
+    for (let i = 0; i < cboxs.length; i++) {
+      const childNodes = cboxs[i].childNodes;
+      for (let j = 0; j < childNodes.length; j++) {
+        const element = childNodes[j];
+        // checkbox 四个点
+        let positionX1 = initvalue + container.offsetLeft + 30 * j
+        let positionY1 = initvalue + container.offsetTop + 30 * i
+        let positionX2 = initvalue + container.offsetLeft + 30 * j + 13
+        let positionY2 = initvalue + container.offsetTop + 30 * i + 13
+        let points = [{x:positionX1, y:positionY1}, {x:positionX2, y:positionY2}, {x:positionX1, y:positionY2}, {x:positionX2, y:positionY1}]
+        if (jugePoint(points, left, right, top, bottom)) {
+          // 清除所有 checkbox 状态
+          if (dragFlag) {
+            clearCheckboxStatus()
+            dragFlag = false
+          }
+          element.checked = true
+        }
+      }
+    }
+  }
+
+  // 监听鼠标按下拖拽事件
+  function onPressDrag () {
+    myCanvas.onmousedown = function (e) {
+      e = e || window.event
+      let startX = e.clientX - box.offsetLeft
+      let startY = e.clientY - box.offsetTop
+      console.log(startY)
+      document.onmousemove = function (e) {
+        e = e || window.event
+        let moveX = e.clientX - box.offsetLeft
+        let moveY = e.clientY - box.offsetTop
+        // 清除原有的图形
+        ctx.clearRect(0, 0, myCanvas.width, myCanvas.height)
+        // 重绘矩形选中区域
+        ctx.strokeRect(startX, startY, moveX-startX, moveY-startY)
+        // 检查选中区域是否存在 checkbox
+        checkChose(startX, startY, moveX, moveY)
+      }
+      document.onmouseup = function (e) {
+        e = e || window.event
+        let endX = e.clientX - box.offsetLeft
+        let endY = e.clientY - box.offsetTop
+        document.onmousemove = null
+        document.onmouseup = null
+        ctx.clearRect(0, 0, myCanvas.width, myCanvas.height)
+        // 结束拖拽标志
+        dragFlag = true
+      }
+    }
+  }
+
+  // 创建checkBox
+  function createCheckBox () {
+    let checkbox = document.createElement('input')
+    checkbox.setAttribute('type', 'checkbox')
+    checkbox.setAttribute('style', 'zoom:150%;')
+
+    let cbox = document.querySelector('.cbox')
+    for (let i = 0; i < 6; i++) {
+      let element = checkbox.cloneNode(true)
+      cbox.append(element)
+    }
+    
+    let container = document.querySelector('.container')
+    for (let i = 0; i < 4; i++) {
+      let element = cbox.cloneNode(true)
+      container.appendChild(element)
+    }
+  }
+</script>
+</html>
