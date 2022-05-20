@@ -43,7 +43,7 @@ function createCheckBox () {
 
 ### Canavas 实现拖拽选中框效果
 
-首先设置个与大盒子相等大小的 canvas 画布，将canvas放入大盒子中，然后设置大盒子的定位为 relative，之后再设置画布 canvas 定位为 position 使其浮动在大盒子之上，但浮动在 container 之下
+首先设置个与大盒子相等大小的 canvas 画布，将canvas放入大盒子中，然后设置大盒子的定位为 relative，之后再设置画布 canvas 定位为 absolute 使其浮动在大盒子之上，但浮动在 container 之下
 
 ```html
 <style>
